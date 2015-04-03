@@ -14,6 +14,12 @@ SSH failed login collector with Google Map KML output. Scales with SQLite3 and i
 * Mouse hover over action shows number of total recorded login attempts
 * Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
 
+Requirements
+------------
+
+* PHP5 CLI  - php-cli 2.2megs
+* PHP5 PDO for SQLite3 - php-pdo 78kb
+
 Bryan Andrews<br>
 bryanandrews@gmail.com<br>
 www.bryanandrews.org<br>
