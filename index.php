@@ -51,6 +51,76 @@ print "<h2>SSH break in attempts map. Last updated: $ftime [<a href=\"https://gi
 ?>
 
 <div id="map-canvas"></div>
+
+<br>
+<h2>PHP JSON Usage examples</h2>
+
+<?php
+highlight_string('<?php 
+
+##########################################################
+#
+# First we load the JSON and decode it into an array
+#
+
+$array = json_decode(file_get_contents("sshfail2kml.json"), true); 
+
+#######################################################################
+#
+# One way to get all the IP addresses with failed login attemps
+#
+
+print "Total unique IP addresses: <b>".number_format(count($array))."</b><Br>\n";
+
+#################################################
+#
+# One way to get the top offending contry
+#
+
+foreach ($array as $ip => $a2) {
+  if ($a2[\'count\'] > $top[\'count\']) {
+    $top = $a2;
+  }
+}
+
+print "Top country: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
+
+# See below:
+?>
+');
+
+print " <br>\n ";
+
+$array = json_decode(file_get_contents("sshfail2kml.json"), true);
+
+print "Total unique IP addresses: <b>".number_format(count($array))."</b><Br>\n";
+
+    /*
+    [183.136.216.4] => Array
+        (
+            [count] => 1088
+            [geoip] => 1
+            [latitude] => 26.9689
+            [longitude] => 109.7725
+            [country_name] => China
+            [city] => Zhongxin
+            [state] => Hunan
+            [timezone] => Asia/Chongqing
+            [county_code3] => 
+        )
+    */
+
+foreach ($array as $ip => $a2) {
+  if ($a2['count'] > $top['count']) {
+    $top = $a2;
+  }
+}
+print "Top country: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
+
+//print_r($array);
+
+?>
+
 </body>
 
 </html>
