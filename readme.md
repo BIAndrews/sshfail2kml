@@ -25,6 +25,22 @@ ScreenShot
 ----------
 ![screensho image](sshfail2kml-map.png "An example Map from live data.")
 
+Usage
+-----
+~~~
+# ./create_kml.php -h
+./create_kml.php [-f] [-j] [-s] [-k] [-m] [-g] [-h]
+
+        -f file         Syslog secure or auth.log log file to process.
+        -j file         JSON file.
+        -s file         SQLite3 DB file.
+        -k file         KML file.
+        -m int          Max number of previous hits to show in KML file.
+        -g url          URL to the GeoIP REST API to use.
+        -h              This help screen.
+        -d              Enable debug mode.
+~~~
+
 Bryan Andrews<br>
 bryanandrews@gmail.com<br>
 www.bryanandrews.org<br>
