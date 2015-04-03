@@ -14,9 +14,10 @@
 ***************************************************************************************************/
 
 
-/***********************************
- * Vars you might want to change
-*/
+/************************************************************
+ * DEFAULT VARIABLES, THESE ARE COMMAND LINE SWITCH OPTIONS *
+ ************************************************************/
+
 $file = 	"auto";				// this is the syslog file where failed sshd attempts are logged
 $regex = 	"/.*Failed password.*/";	// regex used to find failed SSH login attmepts
 $savefile = 	"sshfail2kml.json";		// JSON data file, relative path
@@ -24,7 +25,6 @@ $sqlitedb = 	"sshfail2kml.sqlite";		// SQLite3 DB file name, relative path
 $kmlfile =	"sshfail2kml.kml";		// KML file name, relative path
 $maxprevious =	"6";				// max number of previous attempts to show in the KML map
 $geoipREST =	"http://www.telize.com/geoip/";	// You guys rock thank you
-
 $DEBUG = 	0;
 
 
@@ -32,6 +32,60 @@ $DEBUG = 	0;
 //***************************************************************************************************
 
 $time_start = microtime(true); 
+
+// safety
+if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
+  print "No httpd access.\n";
+  exit(1);
+}
+
+
+$opts = getopt("f:j:s:k:m:g:hd"); 
+foreach (array_keys($opts) as $opt) switch (strtolower($opt)) {
+
+  case 'd':
+    $DEBUG = TRUE;
+    break;
+
+  case 'f':
+    $file = $opts['f'];
+    if (!is_file($file)) { print "ERROR: $file is not a readble file.\n"; exit(1); }
+    break;
+
+  case 'j':
+    $savefile = $opts['j'];
+    break;
+
+  case 's':
+    $sqlitedb = $opts['s'];
+    break;
+
+  case 'k':
+    $kmlfile = $opts['k'];
+    break;
+
+  case 'm':
+    $maxprevious = $opts['m'];
+    if (!is_numeric($maxprevious)) { print "ERROR: $maxprevious is not an integer.\n"; exit(1); }
+    break;
+
+  case 'g':
+    $geoipREST = $opts['g'];
+    if(!filter_var($geoipREST, FILTER_VALIDATE_URL)) { print "ERROR: GeoIP REST URL provided is not a valid URL. See: http://www.telize.com/geoip/\n"; exit(1); }
+    break;
+
+  case 'h':
+    print "$_SERVER[SCRIPT_NAME] [-f] [-j] [-s] [-k] [-m] [-g] [-h]\n
+	-f file		Syslog secure or auth.log log file to process.
+	-j file		JSON file.
+	-s file		SQLite3 DB file.
+	-k file		KML file.
+	-m int		Max number of previous hits to show in KML file.
+	-g url		URL to the GeoIP REST API to use.
+	-h		This help screen.
+	-d		Enable debug mode.\n";
+    exit(1);
+}
 
 if ($file == "auto") {
 
@@ -53,6 +107,14 @@ if ($file == "auto") {
 
 }
 
+if ($DEBUG) {
+  print "\$file = $file\n";
+  print "\$savefile = $savefile\n";
+  print "\$sqlitedb = $sqlitedb\n";
+  print "\$kmlfile = $kmlfile\n";
+  print "\$maxprevious = $maxprevious\n";
+  print "\$geoipREST = $geoipREST\n";
+}
 
 /*
  * SQLITE3 DATABASE CONNECTION - REQUIRED

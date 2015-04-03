@@ -3,7 +3,7 @@ sshfail2kml
 
 v1.1
 
-SSH failed login collector with Google Map KML output. Scales with SQLite3 and is log-rotator friendly.
+SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
 
 <a href="http://www.bryanandrews.org/failedlogins/">DEMO</a>
 
@@ -13,6 +13,7 @@ SSH failed login collector with Google Map KML output. Scales with SQLite3 and i
 * HTML complete with working Google Map KML example
 * Mouse hover over action shows number of total recorded login attempts
 * Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
+* PHP examples for working with JSON
 
 Requirements
 ------------
