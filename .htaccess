@@ -1,0 +1,9 @@
+<Files "sshfail2kml.sqlite">
+     Order allow,deny
+     Deny from all
+</Files>
+
+<Files "sshfail2kml.json">
+     Order allow,deny
+     Deny from all
+</Files>
