@@ -20,6 +20,10 @@ Requirements
 * PHP5 CLI  - php-cli 2.2megs
 * PHP5 PDO for SQLite3 - php-pdo 78kb
 
+ScreenShot
+----------
+![screensho image](sshfail2kml-map.png "An example Map from live data.")
+
 Bryan Andrews<br>
 bryanandrews@gmail.com<br>
 www.bryanandrews.org<br>
