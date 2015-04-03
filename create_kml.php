@@ -1,20 +1,15 @@
 #!/usr/bin/php
 <?php
 /**************************************************************************************************
-										      Bryan Andrews 
+										      Bryan Andrews
 									     bryanandrews@gmail.com
-									http://www.bryanandrews.org 
-
+									http://www.bryanandrews.org
 
                   SAFE TO CRON THIS - DUPLICATE ENTRIES WILL BE IGNORED
 
  Requirements
  - php cli
  - php pdo (for sqlite3)
- - php geoip
- - geoip City dateabase
-   - Download from: http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
-   - CentOS6 local file location needed: /usr/share/GeoIP/GeoIPCity.dat
 
 ***************************************************************************************************/
 
@@ -22,12 +17,14 @@
 /***********************************
  * Vars you might want to change
 */
-$file = 	"/var/log/secure"; // centos6 default
-$regex = 	"/.*Failed password.*/";
-$savefile = 	"sshfail2kml.json";
-$sqlitedb = 	"sshfail2kml.sqlite";
-$kmlfile =	"sshfail2kml.kml";
-$maxprevious =	"6";
+$file = 	"auto";				// this is the syslog file where failed sshd attempts are logged
+$regex = 	"/.*Failed password.*/";	// regex used to find failed SSH login attmepts
+$savefile = 	"sshfail2kml.json";		// JSON data file, relative path
+$sqlitedb = 	"sshfail2kml.sqlite";		// SQLite3 DB file name, relative path
+$kmlfile =	"sshfail2kml.kml";		// KML file name, relative path
+$maxprevious =	"6";				// max number of previous attempts to show in the KML map
+$geoipREST =	"http://www.telize.com/geoip/";	// You guys rock thank you
+
 $DEBUG = 	0;
 
 
@@ -36,17 +33,26 @@ $DEBUG = 	0;
 
 $time_start = microtime(true); 
 
-/*
- * LETS CHECK AND SEE IF WE HAVE GEOIP INSTALL AND THE CITY DATABASE INSTALLED
-*/
+if ($file == "auto") {
 
-if ((function_exists('geoip_db_avail')) && (geoip_db_avail(GEOIP_CITY_EDITION_REV1))) {
-	// correct geoip database exists, usually at /usr/share/GeoIP/GeoIPCity.dat
-	define('getGeoIP',TRUE);
-	if ($DEBUG) print "Found GeoIP city edition.\n";
-} else {
-	if ($DEBUG) print "WARN: did not find GeoIP city edition. GeoIP lookups disabled.\n";
+	if (is_file("/var/log/secure")) {
+
+		$file = "/var/log/secure";
+		if ($DEBUG) print "Detected /var/log/secure\n";
+
+	} elseif (is_file("/var/log/auth.log")) {
+
+		$file = "/var/log/auth.log";
+		if ($DEBUG) print "Detected /var/log/auth.log\n";
+
+	} else {
+
+		print "ERROR: Failed to auto detect syslog auth.log or secure file.\n";
+		exit(1);
+	}
+
 }
+
 
 /*
  * SQLITE3 DATABASE CONNECTION - REQUIRED
@@ -65,13 +71,15 @@ $db->exec($query) or die("Create SQLite3 database failed but DB file open worked
 function sshfail2KMLWrite ($badguys) {
 
 	global $DEBUG, $kmlfile, $db, $maxprevious;
+	$rval = TRUE;
+	$hostname = gethostname();
 
     	$k .= "<?xml version='1.0' encoding='UTF-8'?>\n";
     	$k .= "<kml xmlns='http://www.opengis.net/kml/2.2'>\n";
     	$k .= "<Document>\n";
-    	$k .= "<name>Document.kml</name>\n";
+    	$k .= "<name>$hostname sshfail2kml.kml</name>\n";
     	$k .= "<open>1</open>\n";
-    	$k .= "   <Style id='exampleStyleDocument'>\n";
+    	$k .= "   <Style id='StyleDocument'>\n";
     	$k .= "    <LabelStyle>\n";
     	$k .= "      <color>ff0000cc</color>\n";
     	$k .= "    </LabelStyle>\n";
@@ -93,8 +101,8 @@ function sshfail2KMLWrite ($badguys) {
     	foreach ($badguys as $i => $v) {
 
 		// get the last $maxprevious attempts
-		if ($DEBUG) print "SELECT line from previousFails WHERE line like '%$i%' ORDER BY t ASC LIMIT $maxprevious\n";
-                $result = $db->query("SELECT line from previousFails WHERE line like '%$i%' ORDER BY t ASC LIMIT $maxprevious");
+		if ($DEBUG) print "SELECTing last $maxprevious attempts from sqlite3 DB from $i ";
+                $result = $db->query("SELECT line FROM previousFails WHERE line LIKE '%$i%' ORDER BY t DESC LIMIT $maxprevious");
 
 		if (!is_numeric($v[city]) && $v[city] != "") {
 			$from = "$v[city]";
@@ -110,13 +118,17 @@ function sshfail2KMLWrite ($badguys) {
 		if ($result) {
 			$lastX = "<br />\n";
 			while($res = $result->fetchArray(SQLITE3_ASSOC)){ 
-				$lastX .= $res['line']."<br />";
+				if ($DEBUG) print ".";
+				$lastX .= $res['line']." <br />\n";
 			}
+			if ($DEBUG) print "\n";
+		} else {
+			if ($DEBUG) print "Failed sqlite3 query\n";
 		}
 
         	$k .= "<Placemark>\n";
         	$k .= "  <name>$v[country_name]</name>\n";
-        	$k .= "  <description>$v[count] SSH attempt(s) $from $lastX</description>\n";
+        	$k .= "  <description>$v[count] SSH attempt(s) $from <span style=\"font-size:9px\">$lastX</span></description>\n";
         	$k .= "  <Point>\n";
         	$k .= "    <coordinates> $v[longitude], $v[latitude], 0</coordinates>\n";
         	$k .= "  </Point>\n";
@@ -128,29 +140,23 @@ function sshfail2KMLWrite ($badguys) {
     	$k .= "</Document>\n";
     	$k .= "</kml>\n";
 
-  	// write file of it debug print to screen
+  	// when debugging also dump XML to console
+   	if ($DEBUG) print "$k\n";
 
-   	if ($DEBUG) {
+	if (!file_put_contents($kmlfile, $k)) {
+		print "ERROR: unable to save KML XML to $kmlfile\n";
+		$rval = FALSE;
+	}
 
-		// we don't write the KML if we are in debug mode
-		print "$k\n";
-
-   	} else {
-
-		if (!file_put_contents($kmlfile, $k)) {
-			print "ERROR: unable to save KML XML to $kmlfile\n";
-			exit(1);
-		}
-   	}
-
+	return $rval;
 }
 
 
 /*
- * 	LOOP THROUGH THE SECURE LOG FILE FOR FAILD SSH LOGIN ATTEMPS AND RECORD/INDEX/LOOKUP
+ * 	LOOP THROUGH THE SECURE LOG FILE FOR FAILED SSH LOGIN ATTEMPTS AND RECORD/INDEX/LOOKUP
 */
 
-if (is_readable($file)) {
+if (is_readable($file)) {				# main loop
 
 	$readfile = file_get_contents ($file);
 	preg_match_all ($regex, $readfile, $matches);
@@ -207,38 +213,45 @@ if (is_readable($file)) {
 			$badguys[$items[10]]["count"]++;
 
 			// insert into the SQLite3 DB so we don't count this again
+
 			$result = $db->query("INSERT INTO previousFails VALUES ('$v', '')");
+
 			if (!$result) {
 				print "ERROR: unable to insert record into SQLite3 DB\n"; // not strictly fatal but maybe this should be
 			}
 
-			// get the geoip loc if we haven't yet
-			if (defined('getGeoIP')) {
 
-				if ($badguys[$items[10]]["geoip"] != "false") { // lets only ever do this once
+			if (!isset($badguys[$items[10]]["geoip"])) { // lets only ever do this once
 
-					// get the geoip loc or false to fail it
-					// yum install php-pecl-geoip
+				if ($DEBUG) print "GeoIP lookup for $items[10] ...";
 
-					if ($DEBUG) print "GeoIP lookup for $items[10]\n";
-					$record = geoip_record_by_name($items[10]);
+				sleep(rand(1,3)); // lets be nice to the upstream geoip API
+				$record = json_decode(file_get_contents("$geoipREST/$items[10]"));
 
-					if ($record['latitude']) {
+				if (is_object($record)) {
+
+					if ($DEBUG) print "city is $record->city\n";
 	
-						$badguys[$items[10]]["geoip"] = true;
-						$badguys[$items[10]]["latitude"] = $record['latitude'];
-						$badguys[$items[10]]["longitude"] = $record['longitude'];
-						$badguys[$items[10]]["country_name"] = $record['country_name'];
-						$badguys[$items[10]]["city"] = $record['city'];
-						$badguys[$items[10]]["state"] = $record['region'];
+					$badguys[$items[10]]["geoip"] = 	true;
+					$badguys[$items[10]]["latitude"] = 	$record->latitude;
+					$badguys[$items[10]]["longitude"] = 	$record->longitude;
+					$badguys[$items[10]]["country_name"] = 	$record->country;
+					$badguys[$items[10]]["city"] = 		$record->city;
+					$badguys[$items[10]]["state"] = 	$record->region;
+					$badguys[$items[10]]["timezone"] = 	$record->timezone;
+					$badguys[$items[10]]["county_code3"] = 	$record->county_code3;
 
-					} else {
+				} else {
 
-						$badguys[$items[10]]["geoip"] = false;
-					}
+					if ($DEBUG) print " not found.\n";
+
+					$badguys[$items[10]]["geoip"] = 	false;
 				}
+
 			} else {
-				print "WARN: geoip_record_by_name() doesn't exist, is geoip for php installed?\n";
+
+				if ($DEBUG) print "Not looking up $items[10] because of prevous geoip lookup.\n";
+
 			}
 
 		}

@@ -1,18 +1,19 @@
 sshfail2kml
 ===========
 
-v1.0
+v1.1
 
 SSH failed login collector with Google Map KML output. Scales with SQLite3 and is log-rotator friendly.
 
-* Tested with RedHat/CentOS/RHEL
-* SQLite3 database for duplicate record prevention
-* json export for 3rd party friendly support
-* HTML example complete with working KML example
-* Mouse hover over action shows number of total recorded login attempts
-* GeoIP local database required
-* Intelligent GeoIP lookups to eliminate redundant queries
+<a href="http://www.bryanandrews.org/failedlogins/">DEMO</a>
 
-Bryan Andrews
-bryanandrews@gmail.com
-www.bryanandrews.org
+* Tested with RedHat/CentOS/RHEL, should work on any Debian variant as well
+* SQLite3 database for duplicate record prevention
+* JSON export for 3rd party friendly support
+* HTML complete with working Google Map KML example
+* Mouse hover over action shows number of total recorded login attempts
+* Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
+
+Bryan Andrews<br>
+bryanandrews@gmail.com<br>
+www.bryanandrews.org<br>

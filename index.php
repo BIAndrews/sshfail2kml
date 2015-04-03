@@ -2,6 +2,7 @@
 <html>
 <head>
 
+    <title>sshfail2kml Demo</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style>
@@ -46,7 +47,7 @@
 
 <?php
 $ftime = date("m/d/y h:ia",filemtime("sshfail2kml.kml"));
-print "<h2>Break in attempts in the last 24 hours since $ftime [<a href=\"https://github.com/BIAndrews/sshfail2kml\">Source</a>]</h2>";
+print "<h2>SSH break in attempts map. Last updated: $ftime [<a href=\"https://github.com/BIAndrews/sshfail2kml\">Source</a>]</h2>";
 ?>
 
 <div id="map-canvas"></div>
