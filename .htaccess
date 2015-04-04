@@ -1,13 +1,18 @@
+# Apache .htaccess file example
+
+# block http access to the sqlite DB file by default
 <Files "sshfail2kml.sqlite">
      Order allow,deny
      Deny from all
 </Files>
 
+# block http access to the json file by default, could be handy to open this so you can use it from other servers
 <Files "sshfail2kml.json">
      Order allow,deny
      Deny from all
 </Files>
 
+# if mod_expires is enabled lets set kml and json files to expire in only 1 minute
 <IfModule mod_expires.c>
  <Filesmatch "\.(|json|kml)$">
    ExpiresActive On
