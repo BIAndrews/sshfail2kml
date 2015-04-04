@@ -7,3 +7,10 @@
      Order allow,deny
      Deny from all
 </Files>
+
+<IfModule mod_expires.c>
+ <Filesmatch "\.(|json|kml)$">
+   ExpiresActive On
+   ExpiresDefault "access plus 1 minute"
+ </Filesmatch>
+</IfModule>
