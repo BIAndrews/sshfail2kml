@@ -28,8 +28,8 @@ ScreenShot
 Usage
 -----
 ~~~
-# ./create_kml.php -h
-./create_kml.php [-f] [-j] [-s] [-k] [-m] [-g] [-h]
+# ./create_kml -h
+./create_kml [-f] [-j] [-s] [-k] [-m] [-g] [-h]
 
         -f file         Syslog secure or auth.log log file to process.
         -j file         JSON file.
