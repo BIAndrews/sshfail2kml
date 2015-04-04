@@ -6,7 +6,11 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style>
-      html, body, #map-canvas {
+      html, body {
+        margin: 10px;
+        padding: 0px
+      }
+      #map-canvas {
 	width: 880px;
 	height: 400px;
         margin: 0px;
@@ -47,7 +51,7 @@
 
 <?php
 $ftime = date("m/d/y h:ia",filemtime("sshfail2kml.kml"));
-print "<h2>SSH break in attempts map. Last updated: $ftime [<a href=\"https://github.com/BIAndrews/sshfail2kml\">Source</a>]</h2>";
+print "<h2>SSH break in attempts map. Last updated: $ftime [<a href=\"https://github.com/BIAndrews/sshfail2kml\">Project Home and Source</a>]</h2>";
 ?>
 
 <div id="map-canvas"></div>
