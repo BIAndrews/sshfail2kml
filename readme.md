@@ -9,11 +9,12 @@ SSH failed login collector with Google Map KML and JSON output. Scales with SQLi
 
 * Tested with RedHat/CentOS/RHEL, should work on any Debian variant as well
 * SQLite3 database for duplicate record prevention
-* JSON export for 3rd party friendly support
+* JSON file created and updated each run
 * HTML complete with working Google Map KML example
 * Mouse hover over action shows number of total recorded login attempts
 * Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
 * PHP examples for working with JSON
+* Command line switches to overwrite defaults
 
 Requirements
 ------------
@@ -43,4 +44,4 @@ Usage
 
 Bryan Andrews<br>
 bryanandrews@gmail.com<br>
-www.bryanandrews.org<br>
+http://www.bryanandrews.org<br>
