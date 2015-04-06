@@ -121,11 +121,76 @@ if ($DEBUG) {
 */
 
 $db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
-$query = "CREATE TABLE IF NOT EXISTS previousFails (
-line STRING PRIMARY KEY,
-t TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);";
+$query = "
+BEGIN;
+
+ CREATE TABLE IF NOT EXISTS previousFails (
+  line STRING PRIMARY KEY,
+  t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+ CREATE INDEX IF NOT EXISTS t ON previousFails (t);
+
+ CREATE TABLE IF NOT EXISTS ipaddresses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip CHAR(15) UNIQUE NOT NULL,
+  count INT, 
+  geoip INT,
+  latitude REAL,
+  longitude REAL,
+  country_name CHAR(64),
+  city CHAR(64),
+  state CHAR(64),
+  t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+ CREATE INDEX IF NOT EXISTS ip ON ipaddresses (ip);
+ CREATE INDEX IF NOT EXISTS count ON ipaddresses (count);
+ CREATE INDEX IF NOT EXISTS country_name ON ipaddresses (country_name);
+
+COMMIT;
+";
+
 $db->exec($query) or die("Create SQLite3 database failed but DB file open worked.\n");
+
+/*
+ * This updates the SQLite table ipaddresses with index details for easier and faster data mining
+ *
+ * bool updateSQLRecord ( string $ip, array $r )
+*/
+function updateSQLRecord ($ip, $r) {
+
+	global $db, $DEBUG;
+
+	# See: http://stackoverflow.com/questions/418898/sqlite-upsert-not-insert-or-replace/4330694#4330694
+	$query = "
+	INSERT OR REPLACE INTO ipaddresses (id, ip, count, geoip, latitude, longitude, country_name, city, state) 
+	  VALUES (  (SELECT id FROM ipaddresses WHERE ip = '$ip'),
+            \"$ip\",
+            \"$r[count]\",
+            \"$r[geoip]\",
+            \"$r[latitude]\",
+            \"$r[longitude]\",
+            \"".addslashes($r[country_name])."\",
+            \"".addslashes($r[city])."\",
+            \"".addslashes($r[state])."\"
+          );
+	";
+
+	if ($DEBUG) print "$query\n";
+
+	if ($db->exec($query)) {
+
+		// good
+		$resobj = $db->query("SELECT id FROM ipaddresses WHERE ip = '$ip'");
+		$row = $resobj->fetchArray();
+		return $row['id']; // went ok so we return the ID inserted
+
+	} else {
+
+		print "ERROR: sqlite ipaddress update failed.\n";
+		exit(1);
+
+	}
+
+	return FALSE; // should never get to this point
+}
 
 /*
  * bool sshfail2KMLWrite ( array $badguys )
@@ -161,6 +226,16 @@ function sshfail2KMLWrite ($badguys) {
     	*/
 
     	foreach ($badguys as $i => $v) {
+
+		# This is where we populate/update the ipaddresses SQLite database table
+		if ($rowid = updateSQLRecord($i, $v)) {
+			// good
+			if ($DEBUG) print "Added/Updated record $rowid for $i\n";
+		} else {
+			// ipaddress insert failed
+			print "ERROR: failed to add or update the SQLlite ipaddresses table with the details of $i\n";
+			exit(1);
+		}
 
 		// get the last $maxprevious attempts
 		if ($DEBUG) print "SELECTing last $maxprevious attempts from sqlite3 DB from $i ";
@@ -271,12 +346,11 @@ if (is_readable($file)) {				# main loop
 			) */
 
 			if ($DEBUG) print "Logging failed attempt by ".$items[10]."\n";
+			$result = $db->query("INSERT INTO previousFails VALUES ('$v', '')"); // add this hit to sqlite DB so we don't count it again later in life
 
 			$badguys[$items[10]]["count"]++;
 
 			// insert into the SQLite3 DB so we don't count this again
-
-			$result = $db->query("INSERT INTO previousFails VALUES ('$v', '')");
 
 			if (!$result) {
 				print "ERROR: unable to insert record into SQLite3 DB\n"; // not strictly fatal but maybe this should be
@@ -294,7 +368,7 @@ if (is_readable($file)) {				# main loop
 
 					if ($DEBUG) print "city is $record->city\n";
 	
-					$badguys[$items[10]]["geoip"] = 	true;
+					$badguys[$items[10]]["geoip"] = 	1;
 					$badguys[$items[10]]["latitude"] = 	$record->latitude;
 					$badguys[$items[10]]["longitude"] = 	$record->longitude;
 					$badguys[$items[10]]["country_name"] = 	$record->country;
@@ -307,8 +381,9 @@ if (is_readable($file)) {				# main loop
 
 					if ($DEBUG) print " not found.\n";
 
-					$badguys[$items[10]]["geoip"] = 	false;
+					$badguys[$items[10]]["geoip"] = 	0;
 				}
+
 
 			} else {
 
@@ -316,9 +391,10 @@ if (is_readable($file)) {				# main loop
 
 			}
 
+
 		}
 
-		if ($DEBUG) print_r($badguys);
+		//if ($DEBUG) print_r($badguys);
 
 		// convert the array to the KML file or print if in debug mode
 		sshfail2KMLWrite ($badguys);
