@@ -68,6 +68,6 @@ SQLite3 Schemas
  CREATE INDEX IF NOT EXISTS country_name ON ipaddresses (country_name);
 ~~~
 
-> Bryan Andrews
-> bryanandrews@gmail.com
-> http://www.bryanandrews.org
+> Bryan Andrews<br>
+> bryanandrews@gmail.com<br>
+> http://www.bryanandrews.org<br>
