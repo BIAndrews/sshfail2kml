@@ -17,6 +17,7 @@ SSH failed login collector with Google Map KML and JSON output. Scales with SQLi
 * Command line switches to overwrite defaults
 * Auto detect abuse email addresses for suspect IP addresses and log to SQL and JSON and KML outputs
 * SQLite/JSON/KML files saved in /var/lib/sshfail2kml by default
+* RHEL spec file for RPM creation
 
 Requirements
 ------------
