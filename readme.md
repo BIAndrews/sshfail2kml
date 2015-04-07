@@ -75,6 +75,22 @@ SQLite3 Schemas
  CREATE INDEX IF NOT EXISTS country_name ON ipaddresses (country_name);
 ~~~
 
+JSON Example
+------------
+~~~
+        [218.65.30.73] => Array
+        (
+            [count] => 45
+            [geoip] => 1
+            [latitude] => 28.549999237061
+            [longitude] => 115.93329620361
+            [country_name] => China
+            [city] => Nanchang
+            [state] => 03
+            [abuse_email] => abuse@globenet.com.ph
+        )
+~~~
+
 > Bryan Andrews<br>
 > bryanandrews@gmail.com<br>
 > http://www.bryanandrews.org<br>
