@@ -68,6 +68,7 @@ SQLite3 Schemas
   country_name CHAR(64),
   city CHAR(64),
   state CHAR(64),
+  abuse_email CHAR(128),
   t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
  CREATE INDEX IF NOT EXISTS ip ON ipaddresses (ip);
  CREATE INDEX IF NOT EXISTS count ON ipaddresses (count);

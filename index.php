@@ -87,7 +87,7 @@ foreach ($array as $ip => $a2) {
   }
 }
 
-print "Top country: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
+print "Top IP country of origin: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
 
 # See below:
 ?>
@@ -119,7 +119,7 @@ foreach ($array as $ip => $a2) {
     $top = $a2;
   }
 }
-print "Top country: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
+print "Top IP country of origin: <b>$top[country_name]</b> at <b>".number_format($top[count])."</b> <Br>\n";
 
 //print_r($array);
 
@@ -176,7 +176,7 @@ print "<h2>Sort by Country</h2>";
 $resobj = $db->query("SELECT country_name,sum(count) AS count FROM ipaddresses GROUP BY country_name ORDER BY count DESC LIMIT 10");
 print "<ol>\n";
 while ($row = $resobj->fetchArray()) {
-  $name = stripslashes("$row[country_name] $row[state] $row[city]");
+  $name = stripslashes("$row[country_name]");
   print "\t<li>$name - <b>".number_format($row[count])."</b> failed login attemps\n";
 }
 print "</ol>\n";
