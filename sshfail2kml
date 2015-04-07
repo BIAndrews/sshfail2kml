@@ -165,7 +165,7 @@ $db->exec($query) or die("Create SQLite3 database failed but DB file open worked
  * This is a great way to use DNS to get the abuse email of an IP. 
  * See: https://abusix.com/contactdb.html
  *
- * array getAbuseEmail ( string $ip )
+ * FALSE|string getAbuseEmail ( string $ip )
  *
 */
 function getAbuseEmail ($ip) {
