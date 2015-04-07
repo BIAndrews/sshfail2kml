@@ -2,7 +2,7 @@
 <html>
 <head>
 
-    <title>sshfail2kml Demo</title>
+    <title>SSH failed logins mapped on Google Maps with SQL database records and JSON records - sshfail2kml Demo</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style>
@@ -132,8 +132,13 @@ $db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlited
 $resobj = $db->query("SELECT * FROM ipaddresses ORDER BY count DESC LIMIT 100");
 print "<ol>\n";
 while ($row = $resobj->fetchArray()) {
-  $name = stripslashes("$row[country_name] $row[state] $row[city]");
-  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps</li>\n";
+  $name = stripslashes("$row[country_name] $row[state] $row[city]");					    // Nice way to display the location details
+
+  $lasthitobj = $db->query("SELECT line FROM previousFails WHERE ip = \'$row[ip]\' ORDER BY t DESC LIMIT 1"); // SQL to pull the complete syslog line from the last hit by IP limit 1
+  $lasthit = $lasthitobj->fetchArray();                                                                     // object to array    
+  $lasthit = substr($lasthit[line], 0, 14);                                                                 // dirty way to get the date of the last attempt
+
+  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps - <i>$lasthit</i>\n";
 }
 print "</ol>\n";
 
@@ -146,7 +151,12 @@ $resobj = $db->query("SELECT * FROM ipaddresses ORDER BY count DESC LIMIT 100");
 print "<ol>\n";
 while ($row = $resobj->fetchArray()) {
   $name = stripslashes("$row[country_name] $row[state] $row[city]");
-  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps</li>\n";
+
+  $lasthitobj = $db->query("SELECT line FROM previousFails WHERE ip = '$row[ip]' ORDER BY t DESC LIMIT 1"); // SQL to pull the complete syslog line from the last hit by IP limit 1
+  $lasthit = $lasthitobj->fetchArray(); 								    // object to array
+  $lasthit = substr($lasthit[line], 0, 14); 								    // dirty way to get the date of the last attempt
+
+  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps - <i>$lasthit</i>\n";
 }
 print "</ol>\n";
 

@@ -125,9 +125,12 @@ $query = "
 BEGIN;
 
  CREATE TABLE IF NOT EXISTS previousFails (
-  line STRING PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  line STRING UNIQUE NOT NULL,
+  ip CHAR(15),
   t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
  CREATE INDEX IF NOT EXISTS line ON previousFails (line);
+ CREATE INDEX IF NOT EXISTS ip ON previousFails (ip);
  CREATE INDEX IF NOT EXISTS t ON previousFails (t);
 
  CREATE TABLE IF NOT EXISTS ipaddresses (
@@ -228,6 +231,8 @@ function sshfail2KMLWrite ($badguys) {
 
     	foreach ($badguys as $i => $v) {
 
+		if ($i == "127.0.0.1") continue; # lets skip this record if it was a failed login from localhost
+
 		# This is where we populate/update the ipaddresses SQLite database table
 		if ($rowid = updateSQLRecord($i, $v)) {
 			// good
@@ -240,7 +245,8 @@ function sshfail2KMLWrite ($badguys) {
 
 		// get the last $maxprevious attempts
 		if ($DEBUG) print "SELECTing last $maxprevious attempts from sqlite3 DB from $i ";
-                $result = $db->query("SELECT line FROM previousFails WHERE line LIKE '%$i%' ORDER BY t DESC LIMIT $maxprevious");
+                //$result = $db->query("SELECT line FROM previousFails WHERE line LIKE '%$i%' ORDER BY t DESC LIMIT $maxprevious");
+                $result = $db->query("SELECT line FROM previousFails WHERE ip = '$i' ORDER BY t DESC LIMIT $maxprevious");
 
 		if (!is_numeric($v[city]) && $v[city] != "") {
 			$from = "$v[city]";
@@ -324,7 +330,10 @@ if (is_readable($file)) {				# main loop
 				// previously recorded hit, ignore
 				if ($DEBUG) print ".";
 				continue;
+			} else {
+				if ($DEBUG) print "o";
 			}
+
 			if ($DEBUG) print "\n";
 
 			$items = explode(" ", $v);
@@ -347,7 +356,8 @@ if (is_readable($file)) {				# main loop
 			) */
 
 			if ($DEBUG) print "Logging failed attempt by ".$items[10]."\n";
-			$result = $db->query("INSERT INTO previousFails VALUES ('$v', '')"); // add this hit to sqlite DB so we don't count it again later in life
+			if ($DEBUG) print "INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')\n";
+			$result = $db->query("INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')"); // add this hit to sqlite DB so we don't count it again later in life
 
 			$badguys[$items[10]]["count"]++;
 
