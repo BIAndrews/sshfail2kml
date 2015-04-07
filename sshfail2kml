@@ -126,7 +126,7 @@ if ($DEBUG) {
  * SQLITE3 DATABASE CONNECTION - REQUIRED
 */
 
-install -d /var/lib/sshfail2kml # just in case
+if (!is_dir("/var/lib/sshfail2kml")) mkdir("/var/lib/sshfail2kml"); # just in case
 $db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
 $query = "
 BEGIN;
