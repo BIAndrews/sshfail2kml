@@ -123,6 +123,33 @@ print "Top country: <b>$top[country_name]</b> at <b>".number_format($top[count])
 
 //print_r($array);
 
+print "<h2>SQLite3 PHP Demo</h2>\n\n";
+
+highlight_string('<?php
+
+$sqlitedb = "sshfail2kml.sqlite";
+$db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
+$resobj = $db->query("SELECT * FROM ipaddresses ORDER BY count DESC LIMIT 100");
+print "<ol>\n";
+while ($row = $resobj->fetchArray()) {
+  $name = stripslashes("$row[country_name] $row[state] $row[city]");
+  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps</li>\n";
+}
+print "</ol>\n";
+
+# See below: 
+?>');
+
+$sqlitedb = "sshfail2kml.sqlite";
+$db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
+$resobj = $db->query("SELECT * FROM ipaddresses ORDER BY count DESC LIMIT 100");
+print "<ol>\n";
+while ($row = $resobj->fetchArray()) {
+  $name = stripslashes("$row[country_name] $row[state] $row[city]");
+  print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps</li>\n";
+}
+print "</ol>\n";
+
 ?>
 
 </body>

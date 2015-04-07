@@ -127,6 +127,7 @@ BEGIN;
  CREATE TABLE IF NOT EXISTS previousFails (
   line STRING PRIMARY KEY,
   t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+ CREATE INDEX IF NOT EXISTS line ON previousFails (line);
  CREATE INDEX IF NOT EXISTS t ON previousFails (t);
 
  CREATE TABLE IF NOT EXISTS ipaddresses (
@@ -173,7 +174,7 @@ function updateSQLRecord ($ip, $r) {
           );
 	";
 
-	if ($DEBUG) print "$query\n";
+	//if ($DEBUG) print "$query\n";
 
 	if ($db->exec($query)) {
 
@@ -265,7 +266,7 @@ function sshfail2KMLWrite ($badguys) {
 
         	$k .= "<Placemark>\n";
         	$k .= "  <name>$v[country_name]</name>\n";
-        	$k .= "  <description>$v[count] SSH attempt(s) $from <span style=\"font-size:9px\">$lastX</span></description>\n";
+        	$k .= "  <description>".number_format($v[count])." SSH attempt(s) $from <span style=\"font-size:9px\">$lastX</span></description>\n";
         	$k .= "  <Point>\n";
         	$k .= "    <coordinates> $v[longitude], $v[latitude], 0</coordinates>\n";
         	$k .= "  </Point>\n";

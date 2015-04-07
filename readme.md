@@ -49,6 +49,7 @@ SQLite3 Schemas
  CREATE TABLE IF NOT EXISTS previousFails (
   line STRING PRIMARY KEY,
   t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+ CREATE INDEX IF NOT EXISTS line ON previousFails (line);
  CREATE INDEX IF NOT EXISTS t ON previousFails (t);
 
  -- Indexed table of IP addresses with GeoIP details and hit counts
