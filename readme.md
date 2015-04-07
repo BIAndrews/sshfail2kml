@@ -1,7 +1,7 @@
 sshfail2kml
 ===========
 
-v1.3
+v1.3.1
 
 SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
 
@@ -16,6 +16,7 @@ SSH failed login collector with Google Map KML and JSON output. Scales with SQLi
 * PHP examples for working with JSON
 * Command line switches to overwrite defaults
 * Auto detect abuse email addresses for suspect IP addresses and log to SQL and JSON and KML outputs
+* SQLite/JSON/KML files saved in /var/lib/sshfail2kml by default
 
 Requirements
 ------------
@@ -30,8 +31,8 @@ ScreenShot
 Usage
 -----
 ~~~
-# ./create_kml -h
-./create_kml [-f] [-j] [-s] [-k] [-m] [-g] [-h] [-q] [-d]
+# /usr/bin/sshfail2kml -h
+/usr/bin/sshfail2kml [-f] [-j] [-s] [-k] [-m] [-g] [-h] [-q] [-d]
 
         -f file         Syslog secure or auth.log log file to process.   Default: Auto detect
         -j file         JSON file.                                       Default: sshfail2kml.json

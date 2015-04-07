@@ -18,13 +18,13 @@
  * DEFAULT VARIABLES, THESE ARE COMMAND LINE SWITCH OPTIONS *
  ************************************************************/
 
-$file = 	"auto";				// this is the syslog file where failed sshd attempts are logged
-$regex = 	"/.*Failed password.*/";	// regex used to find failed SSH login attmepts, shouldn't be changed
-$savefile = 	"sshfail2kml.json";		// JSON file, relative path
-$sqlitedb = 	"sshfail2kml.sqlite";		// SQLite3 DB file, relative path
-$kmlfile =	"sshfail2kml.kml";		// KML file, relative path
-$maxprevious =	"6";				// max number of previous attempts to show in the KML map
-$geoipREST =	"http://www.telize.com/geoip/";	// You guys rock, thank you
+$file = 	"auto";						// this is the syslog file where failed sshd attempts are logged
+$regex = 	"/.*Failed password.*/";			// regex used to find failed SSH login attmepts, shouldn't be changed
+$savefile = 	"/var/lib/sshfail2kml/sshfail2kml.json";	// JSON file, relative path
+$sqlitedb = 	"/var/lib/sshfail2kml/sshfail2kml.sqlite";	// SQLite3 DB file, relative path
+$kmlfile =	"/var/lib/sshfail2kml/sshfail2kml.kml";		// KML file, relative path
+$maxprevious =	"6";						// max number of previous attempts to show in the KML map
+$geoipREST =	"http://www.telize.com/geoip/";			// You guys rock, thank you
 $DEBUG = 	0;
 
 
@@ -126,6 +126,7 @@ if ($DEBUG) {
  * SQLITE3 DATABASE CONNECTION - REQUIRED
 */
 
+install -d /var/lib/sshfail2kml # just in case
 $db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
 $query = "
 BEGIN;
