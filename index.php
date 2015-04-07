@@ -142,11 +142,22 @@ while ($row = $resobj->fetchArray()) {
 }
 print "</ol>\n";
 
+print "<h2>Sort by Country</h2>"; 
+$resobj = $db->query("SELECT country_name,sum(count) AS count FROM ipaddresses GROUP BY country_name ORDER BY count DESC LIMIT 10");
+print "<ol>\n";
+while ($row = $resobj->fetchArray()) {
+  $name = stripslashes("$row[country_name] $row[state] $row[city]");
+  print "\t<li>$name - <b>".number_format($row[count])."</b> failed login attemps\n";
+}
+print "</ol>\n";
+
 # See below: 
 ?>');
 
 $sqlitedb = "sshfail2kml.sqlite";
 $db = new SQLite3($sqlitedb, SQLITE3_OPEN_READONLY) or die("Unable to open SQLite3 database at $sqlitedb\n");
+
+print "<h2>Sort by IP</h2>";
 $resobj = $db->query("SELECT * FROM ipaddresses ORDER BY count DESC LIMIT 100");
 print "<ol>\n";
 while ($row = $resobj->fetchArray()) {
@@ -159,6 +170,18 @@ while ($row = $resobj->fetchArray()) {
   print "\t<li>$name ($row[ip]) - <b><a href=\"http://www.abuseipdb.com/check/$row[ip]\">".number_format($row[count])."</a></b> failed login attemps - <i>$lasthit</i>\n";
 }
 print "</ol>\n";
+
+
+print "<h2>Sort by Country</h2>";
+$resobj = $db->query("SELECT country_name,sum(count) AS count FROM ipaddresses GROUP BY country_name ORDER BY count DESC LIMIT 10");
+print "<ol>\n";
+while ($row = $resobj->fetchArray()) {
+  $name = stripslashes("$row[country_name] $row[state] $row[city]");
+  print "\t<li>$name - <b>".number_format($row[count])."</b> failed login attemps\n";
+}
+print "</ol>\n";
+
+
 
 ?>
 

@@ -307,7 +307,7 @@ function sshfail2KMLWrite ($badguys) {
 		}
 
 		// If we have a recorded abuse email, lets show it
-		if ($v[abuse_email] != "") $email .= " - $v[abuse_email]";
+		#if ($v[abuse_email] != "") $email .= " - $v[abuse_email]";
 
         	$k .= "<Placemark>\n";
         	$k .= "  <name>$v[country_name] $email</name>\n";
