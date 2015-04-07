@@ -1,7 +1,6 @@
 # install -d ~/rpmbuild/SOURCES
-# wget https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/create_kml -O ~/rpmbuild/SOURCES/create_kml
+# wget https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml -O ~/rpmbuild/SOURCES/sshfail2kml
 # wget https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml-cron.sh -O ~/rpmbuild/SOURCES/sshfail2kml-cron.sh
-# mv ~/rpmbuild/SOURCES/create_kml ~/rpmbuild/SOURCES/sshfail2kml
 
 Summary: SSH failed login attempts logged and GeoIP info acquired for Google Map KML display in an HTML page. Complete with JSON results and SQLite indexed database for a log rotation friendly setup.
 Name: sshfail2kml
