@@ -40,8 +40,13 @@ if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
 }
 
 
-$opts = getopt("f:j:s:k:m:g:hd"); 
+$opts = getopt("f:j:s:k:m:g:hdq"); 
 foreach (array_keys($opts) as $opt) switch (strtolower($opt)) {
+
+  case 'q':
+    $QUIET = TRUE;
+    $DEBUG = FALSE;
+    break;
 
   case 'd':
     $DEBUG = TRUE;
@@ -75,14 +80,15 @@ foreach (array_keys($opts) as $opt) switch (strtolower($opt)) {
     break;
 
   case 'h':
-    print "$_SERVER[SCRIPT_NAME] [-f] [-j] [-s] [-k] [-m] [-g] [-h]\n
-	-f file		Syslog secure or auth.log log file to process.
-	-j file		JSON file.
-	-s file		SQLite3 DB file.
-	-k file		KML file.
-	-m int		Max number of previous hits to show in KML file.
-	-g url		URL to the GeoIP REST API to use.
+    print "$_SERVER[SCRIPT_NAME] [-f] [-j] [-s] [-k] [-m] [-g] [-h] [-q] [-d]\n
+	-f file		Syslog secure or auth.log log file to process. 	 Default: Auto detect
+	-j file		JSON file. 					 Default: sshfail2kml.json
+	-s file		SQLite3 DB file. 				 Default: sshfail2kml.sqlite
+	-k file		KML file. 					 Default: sshfail2kml.kml
+	-m int		Max number of previous hits to show in KML file. Default: 6
+	-g url		URL to the GeoIP REST API to use. 		 Default: http://www.telize.com/geoip/
 	-h		This help screen.
+	-q		Be quiet.
 	-d		Enable debug mode.\n";
     exit(1);
 }
@@ -143,6 +149,7 @@ BEGIN;
   country_name CHAR(64),
   city CHAR(64),
   state CHAR(64),
+  abuse_email CHAR(128),
   t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
  CREATE INDEX IF NOT EXISTS ip ON ipaddresses (ip);
  CREATE INDEX IF NOT EXISTS count ON ipaddresses (count);
@@ -152,6 +159,44 @@ COMMIT;
 ";
 
 $db->exec($query) or die("Create SQLite3 database failed but DB file open worked.\n");
+
+/*
+ * This is a great way to use DNS to get the abuse email of an IP. 
+ * See: https://abusix.com/contactdb.html
+ *
+ * array getAbuseEmail ( string $ip )
+ *
+*/
+function getAbuseEmail ($ip) {
+
+	$rval = FALSE;
+
+	/* EXAMPLE ARRAY RETURNED
+	Array
+	(
+	    [0] => Array
+	        (
+	            [host] => 43.255.191.180.abuse-contacts.abusix.org
+	            [type] => TXT
+	            [txt] => abuse@globenet.com.ph
+	            [entries] => Array
+	                (
+	                    [0] => abuse@globenet.com.ph
+	                )
+	
+	            [class] => IN
+	            [ttl] => 599
+	        )
+	)
+	*/
+
+	if ($array = dns_get_record("${ip}.abuse-contacts.abusix.org", DNS_TXT)) {
+		$rval = $array[0][txt];
+		if ($DEBUG) print "Found abuse contact $rval for IP $ip\n";
+	}
+
+	return $rval;
+}
 
 /*
  * This updates the SQLite table ipaddresses with index details for easier and faster data mining
@@ -164,7 +209,7 @@ function updateSQLRecord ($ip, $r) {
 
 	# See: http://stackoverflow.com/questions/418898/sqlite-upsert-not-insert-or-replace/4330694#4330694
 	$query = "
-	INSERT OR REPLACE INTO ipaddresses (id, ip, count, geoip, latitude, longitude, country_name, city, state) 
+	INSERT OR REPLACE INTO ipaddresses (id, ip, count, geoip, latitude, longitude, country_name, city, state, abuse_email) 
 	  VALUES (  (SELECT id FROM ipaddresses WHERE ip = '$ip'),
             \"$ip\",
             \"$r[count]\",
@@ -173,7 +218,8 @@ function updateSQLRecord ($ip, $r) {
             \"$r[longitude]\",
             \"".addslashes($r[country_name])."\",
             \"".addslashes($r[city])."\",
-            \"".addslashes($r[state])."\"
+            \"".addslashes($r[state])."\",
+            \"".addslashes($r[abuse_email])."\"
           );
 	";
 
@@ -188,7 +234,7 @@ function updateSQLRecord ($ip, $r) {
 
 	} else {
 
-		print "ERROR: sqlite ipaddress update failed.\n";
+		print "$query \nERROR: sqlite ipaddress update failed.\n";
 		exit(1);
 
 	}
@@ -226,26 +272,16 @@ function sshfail2KMLWrite ($badguys) {
             [country_name] => China
             [city] => Nanchang
             [state] => 03
+            [abuse_email] => abuse@globenet.com.ph
         )
     	*/
 
+	if ($DEBUG) print "\nCreating KML file...\n";
+
     	foreach ($badguys as $i => $v) {
 
-		if ($i == "127.0.0.1") continue; # lets skip this record if it was a failed login from localhost
-
-		# This is where we populate/update the ipaddresses SQLite database table
-		if ($rowid = updateSQLRecord($i, $v)) {
-			// good
-			if ($DEBUG) print "Added/Updated record $rowid for $i\n";
-		} else {
-			// ipaddress insert failed
-			print "ERROR: failed to add or update the SQLlite ipaddresses table with the details of $i\n";
-			exit(1);
-		}
-
 		// get the last $maxprevious attempts
-		if ($DEBUG) print "SELECTing last $maxprevious attempts from sqlite3 DB from $i ";
-                //$result = $db->query("SELECT line FROM previousFails WHERE line LIKE '%$i%' ORDER BY t DESC LIMIT $maxprevious");
+		if ($DEBUG2) print "SELECTing last $maxprevious attempts from sqlite3 DB from $i ";
                 $result = $db->query("SELECT line FROM previousFails WHERE ip = '$i' ORDER BY t DESC LIMIT $maxprevious");
 
 		if (!is_numeric($v[city]) && $v[city] != "") {
@@ -262,13 +298,16 @@ function sshfail2KMLWrite ($badguys) {
 		if ($result) {
 			$lastX = "<br />\n";
 			while($res = $result->fetchArray(SQLITE3_ASSOC)){ 
-				if ($DEBUG) print ".";
+				if ($DEBUG2) print ".";
 				$lastX .= $res['line']." <br />\n";
 			}
-			if ($DEBUG) print "\n";
+			if ($DEBUG2) print "\n";
 		} else {
-			if ($DEBUG) print "Failed sqlite3 query\n";
+			print "FAILED: SQLite3 select query to get last $maxprevious attempts from $i\n";
 		}
+
+		// If we have a recorded abuse email, lets show it
+		if ($v[abuse_email] != "") $from .= "<$v[abuse_email]>";
 
         	$k .= "<Placemark>\n";
         	$k .= "  <name>$v[country_name]</name>\n";
@@ -285,7 +324,7 @@ function sshfail2KMLWrite ($badguys) {
     	$k .= "</kml>\n";
 
   	// when debugging also dump XML to console
-   	if ($DEBUG) print "$k\n";
+   	//if ($DEBUG) print "$k\n";
 
 	if (!file_put_contents($kmlfile, $k)) {
 		print "ERROR: unable to save KML XML to $kmlfile\n";
@@ -295,10 +334,25 @@ function sshfail2KMLWrite ($badguys) {
 	return $rval;
 }
 
+/*
+ * Just a fast way to make a byte int human readable
+ * See: http://php.net/manual/en/function.filesize.php
+*/
+function human_filesize($bytes, $decimals = 2) {
+  $sz = 'BKMGTP';
+  $factor = floor((strlen($bytes) - 1) / 3);
+  return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
+}
 
 /*
  * 	LOOP THROUGH THE SECURE LOG FILE FOR FAILED SSH LOGIN ATTEMPTS AND RECORD/INDEX/LOOKUP
 */
+
+// Get the last runs cache file so we can increment values.
+if (is_file($savefile)) {
+	$badguys = json_decode(file_get_contents($savefile), true);
+}
+
 
 if (is_readable($file)) {				# main loop
 
@@ -306,11 +360,6 @@ if (is_readable($file)) {				# main loop
 	preg_match_all ($regex, $readfile, $matches);
 
 	if (is_array($matches)) {
-
-		// get the last runs cache file so we can increment
-		if (is_file($savefile)) {
-			$badguys = json_decode(file_get_contents($savefile), true);
-		}
 
 		foreach ($matches[0] as $v) {
 
@@ -323,15 +372,13 @@ if (is_readable($file)) {				# main loop
 			$v = preg_replace('/\s+/', ' ', $v); 							// remove all double spaces to clean it up for the explode
 			$v = str_replace("Failed password for invalid user", "Failed password for", $v);	// remove a string to make it all neat for explode
 
-			// check to see if we've already processed this hit before, if so skip it
-			$result = $db->query("SELECT * from previousFails WHERE line = '$v'");
+			// Check to see if we've already processed this hit before, if so skip it...
+			$result = $db->query("SELECT * from previousFails WHERE line = '$v'"); // This is indexed to go fast
 			$row = $result->fetchArray();
 			if (is_array($row)) {
 				// previously recorded hit, ignore
 				if ($DEBUG) print ".";
 				continue;
-			} else {
-				if ($DEBUG) print "o";
 			}
 
 			if ($DEBUG) print "\n";
@@ -355,29 +402,33 @@ if (is_readable($file)) {				# main loop
 			    [13] => ssh2
 			) */
 
-			if ($DEBUG) print "Logging failed attempt by ".$items[10]."\n";
-			if ($DEBUG) print "INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')\n";
-			$result = $db->query("INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')"); // add this hit to sqlite DB so we don't count it again later in life
+			if ($items[10] == "127.0.0.1") {
+				if ($DEBUG) print "Skipping record for hit from 127.0.0.1\n";
+				continue; # lets skip this record if it was a failed login from localhost
+			}
 
-			$badguys[$items[10]]["count"]++;
+			if ($DEBUG) print "Logging failed attempt by ".$items[10];
+			//if ($DEBUG) print "INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')\n";
 
-			// insert into the SQLite3 DB so we don't count this again
+			// Insert into the SQLite3 DB so we don't count this again
+			$result = $db->query("INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')");
 
 			if (!$result) {
 				print "ERROR: unable to insert record into SQLite3 DB\n"; // not strictly fatal but maybe this should be
 			}
 
+			$badguys[$items[10]]["count"]++;
 
 			if (!isset($badguys[$items[10]]["geoip"])) { // lets only ever do this once
 
-				if ($DEBUG) print "GeoIP lookup for $items[10] ...";
+				if ($DEBUG) print " GeoIP lookup for $items[10] ...";
 
 				sleep(rand(1,3)); // lets be nice to the upstream geoip API
 				$record = json_decode(file_get_contents("$geoipREST/$items[10]"));
 
 				if (is_object($record)) {
 
-					if ($DEBUG) print "city is $record->city\n";
+					if ($DEBUG) print " city is $record->city\n";
 	
 					$badguys[$items[10]]["geoip"] = 	1;
 					$badguys[$items[10]]["latitude"] = 	$record->latitude;
@@ -387,6 +438,18 @@ if (is_readable($file)) {				# main loop
 					$badguys[$items[10]]["state"] = 	$record->region;
 					$badguys[$items[10]]["timezone"] = 	$record->timezone;
 					$badguys[$items[10]]["county_code3"] = 	$record->county_code3;
+					$badguys[$items[10]]["abuse_email"] = 	getAbuseEmail($items[10]);
+
+					// This is where we populate/update the ipaddresses SQLite3 database table
+
+					if ($rowid = updateSQLRecord($items[10], $badguys[$items[10]])) {
+						// good
+						if ($DEBUG) print " Added/Updated SQL record $rowid\n";
+					} else {
+						// ipaddress insert failed
+						print "ERROR: failed to add or update the SQLite3 ipaddresses table with the details of $items[10]\n";
+						exit(1);
+					}
 
 				} else {
 
@@ -395,13 +458,11 @@ if (is_readable($file)) {				# main loop
 					$badguys[$items[10]]["geoip"] = 	0;
 				}
 
-
 			} else {
 
-				if ($DEBUG) print "Not looking up $items[10] because of prevous geoip lookup.\n";
+				if ($DEBUG) print "Not looking up $items[10] because of previous failed geoip lookup.\n";
 
 			}
-
 
 		}
 
@@ -412,9 +473,9 @@ if (is_readable($file)) {				# main loop
 
 		// save game
 		if (file_put_contents($savefile, json_encode($badguys,TRUE))) {
-			if ($DEBUG) print "Saved data to $savefile\n";
+			if ($DEBUG) print "Saved ".human_filesize(strlen(json_encode($badguys,TRUE)))." to $savefile\n";
 		} else {
-			print "WARN: unable to save data to $savefile\n";
+			print "ERROR: unable to save data to $savefile\n";
 		}
 
 
@@ -429,5 +490,7 @@ if (is_readable($file)) {				# main loop
 
 $time_end = microtime(true);
 $execution_time = ($time_end - $time_start);
-print "Total Execution Time: ".$execution_time." s\n";
+if ($QUIET != TRUE) {
+	print "Total Execution Time: ".$execution_time." s processing $file ".human_filesize(filesize($file))." saved to $savefile\n";
+}
 ?>
