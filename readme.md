@@ -1,7 +1,7 @@
 sshfail2kml
 ===========
 
-v1.3.1
+v1.3.2
 
 SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
 
@@ -17,7 +17,8 @@ SSH failed login collector with Google Map KML and JSON output. Scales with SQLi
 * Command line switches to overwrite defaults
 * Auto detect abuse email addresses for suspect IP addresses and log to SQL and JSON and KML outputs
 * SQLite/JSON/KML files saved in /var/lib/sshfail2kml by default
-* RHEL spec file for RPM creation
+* RPM noarch spec file for RPM creation with examples
+* Externalized settings in optional conf /etc file
 
 Requirements
 ------------
@@ -36,9 +37,9 @@ Usage
 /usr/bin/sshfail2kml [-f] [-j] [-s] [-k] [-m] [-g] [-h] [-q] [-d]
 
         -f file         Syslog secure or auth.log log file to process.   Default: Auto detect
-        -j file         JSON file.                                       Default: sshfail2kml.json
-        -s file         SQLite3 DB file.                                 Default: sshfail2kml.sqlite
-        -k file         KML file.                                        Default: sshfail2kml.kml
+        -j file         JSON file.                                       Default: /var/lib/sshfail2kml/sshfail2kml.json
+        -s file         SQLite3 DB file.                                 Default: /var/lib/sshfail2kml/sshfail2kml.sqlite
+        -k file         KML file.                                        Default: /var/lib/sshfail2kml/sshfail2kml.kml
         -m int          Max number of previous hits to show in KML file. Default: 6
         -g url          URL to the GeoIP REST API to use.                Default: http://www.telize.com/geoip/
         -h              This help screen.

@@ -25,7 +25,8 @@ $sqlitedb = 	"/var/lib/sshfail2kml/sshfail2kml.sqlite";	// SQLite3 DB file, rela
 $kmlfile =	"/var/lib/sshfail2kml/sshfail2kml.kml";		// KML file, relative path
 $maxprevious =	"6";						// max number of previous attempts to show in the KML map
 $geoipREST =	"http://www.telize.com/geoip/";			// You guys rock, thank you
-$DEBUG = 	0;
+$conf =		"/etc/sshfail2kml.conf";			// Location in etc of the conf file
+$DEBUG = 	1;
 
 
 //***************************************************************************************************
@@ -37,6 +38,23 @@ $time_start = microtime(true);
 if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
   print "No httpd access.\n";
   exit(1);
+}
+
+// support for externalized settings in an in file in /etc/sshfail2kml.conf
+if (is_file($conf)) {
+
+	// build an array from the ini file, these can be overridden by the command line options though
+	$iniSettings = parse_ini_file($conf);
+
+	if ($DEBUG) print "Read ".count($iniSettings)." from $conf\n";
+
+	if ($iniSettings[authlog]) 	$file =        $iniSettings[authlog];
+	if ($iniSettings[json]) 	$savefile =    $iniSettings[json];
+	if ($iniSettings[sqlite]) 	$sqlitedb =    $iniSettings[sqlite];
+	if ($iniSettings[kml]) 		$kmlfile =     $iniSettings[kml];
+	if ($iniSettings[maxprevious]) 	$maxprevious = $iniSettings[maxprevious];
+	if ($iniSettings[geoipREST]) 	$geoipREST =   $iniSettings[geoipREST];
+	if ($iniSettings[debug]) 	$DEBUG =       $iniSettings[debug];
 }
 
 
@@ -121,6 +139,8 @@ if ($DEBUG) {
   print "\$maxprevious = $maxprevious\n";
   print "\$geoipREST = $geoipREST\n";
 }
+
+exit;
 
 /*
  * SQLITE3 DATABASE CONNECTION - REQUIRED
