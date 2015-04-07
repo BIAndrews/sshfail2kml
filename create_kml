@@ -19,12 +19,12 @@
  ************************************************************/
 
 $file = 	"auto";				// this is the syslog file where failed sshd attempts are logged
-$regex = 	"/.*Failed password.*/";	// regex used to find failed SSH login attmepts
-$savefile = 	"sshfail2kml.json";		// JSON data file, relative path
-$sqlitedb = 	"sshfail2kml.sqlite";		// SQLite3 DB file name, relative path
-$kmlfile =	"sshfail2kml.kml";		// KML file name, relative path
+$regex = 	"/.*Failed password.*/";	// regex used to find failed SSH login attmepts, shouldn't be changed
+$savefile = 	"sshfail2kml.json";		// JSON file, relative path
+$sqlitedb = 	"sshfail2kml.sqlite";		// SQLite3 DB file, relative path
+$kmlfile =	"sshfail2kml.kml";		// KML file, relative path
 $maxprevious =	"6";				// max number of previous attempts to show in the KML map
-$geoipREST =	"http://www.telize.com/geoip/";	// You guys rock thank you
+$geoipREST =	"http://www.telize.com/geoip/";	// You guys rock, thank you
 $DEBUG = 	0;
 
 
@@ -307,17 +307,17 @@ function sshfail2KMLWrite ($badguys) {
 		}
 
 		// If we have a recorded abuse email, lets show it
-		if ($v[abuse_email] != "") $from .= "<$v[abuse_email]>";
+		if ($v[abuse_email] != "") $email .= " - $v[abuse_email]";
 
         	$k .= "<Placemark>\n";
-        	$k .= "  <name>$v[country_name]</name>\n";
+        	$k .= "  <name>$v[country_name] $email</name>\n";
         	$k .= "  <description>".number_format($v[count])." SSH attempt(s) $from <span style=\"font-size:9px\">$lastX</span></description>\n";
         	$k .= "  <Point>\n";
         	$k .= "    <coordinates> $v[longitude], $v[latitude], 0</coordinates>\n";
         	$k .= "  </Point>\n";
         	$k .= " </Placemark>\n";
 
-		unset($from);
+		unset($from); unset($email);
     	}
 
     	$k .= "</Document>\n";
@@ -460,7 +460,7 @@ if (is_readable($file)) {				# main loop
 
 			} else {
 
-				if ($DEBUG) print "Not looking up $items[10] because of previous failed geoip lookup.\n";
+				if ($DEBUG) print " not looking up GeoIP details because of previous failed attempt.\n";
 
 			}
 
