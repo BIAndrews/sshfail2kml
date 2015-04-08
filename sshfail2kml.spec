@@ -32,7 +32,7 @@ curl -s https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2k
 %{__mkdir_p} ${RPM_BUILD_ROOT}/etc/cron.d
 %{__mkdir_p} ${RPM_BUILD_ROOT}/usr/bin
 %{__mkdir_p} ${RPM_BUILD_ROOT}/var/lib/sshfail2kml
-%{__install} -m0644 %{SOURCE0} ${RPM_BUILD_ROOT}/usr/bin
+%{__install} -m0744 %{SOURCE0} ${RPM_BUILD_ROOT}/usr/bin
 %{__install} -m0644 %{SOURCE1} ${RPM_BUILD_ROOT}/etc/cron.d
 %{__install} -m0640 %{SOURCE2} ${RPM_BUILD_ROOT}/etc
 

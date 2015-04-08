@@ -26,7 +26,8 @@ $kmlfile =	"/var/lib/sshfail2kml/sshfail2kml.kml";		// KML file, relative path
 $maxprevious =	"6";						// max number of previous attempts to show in the KML map
 $geoipREST =	"http://www.telize.com/geoip/";			// You guys rock, thank you
 $conf =		"/etc/sshfail2kml.conf";			// Location in etc of the conf file
-$DEBUG = 	1;
+$DEBUG = 	0;
+error_reporting(0);
 
 
 //***************************************************************************************************
@@ -48,13 +49,13 @@ if (is_file($conf)) {
 
 	if ($DEBUG) print "Read ".count($iniSettings)." from $conf\n";
 
-	if ($iniSettings[authlog]) 	$file =        $iniSettings[authlog];
-	if ($iniSettings[json]) 	$savefile =    $iniSettings[json];
-	if ($iniSettings[sqlite]) 	$sqlitedb =    $iniSettings[sqlite];
-	if ($iniSettings[kml]) 		$kmlfile =     $iniSettings[kml];
-	if ($iniSettings[maxprevious]) 	$maxprevious = $iniSettings[maxprevious];
-	if ($iniSettings[geoipREST]) 	$geoipREST =   $iniSettings[geoipREST];
-	if ($iniSettings[debug]) 	$DEBUG =       $iniSettings[debug];
+	if ($iniSettings['authlog']) 	 $file =        $iniSettings['authlog'];
+	if ($iniSettings['json']) 	 $savefile =    $iniSettings['json'];
+	if ($iniSettings['sqlite']) 	 $sqlitedb =    $iniSettings['sqlite'];
+	if ($iniSettings['kml']) 	 $kmlfile =     $iniSettings['kml'];
+	if ($iniSettings['maxprevious']) $maxprevious = $iniSettings['maxprevious'];
+	if ($iniSettings['geoipREST']) 	 $geoipREST =   $iniSettings['geoipREST'];
+	if ($iniSettings['debug']) 	 $DEBUG =       $iniSettings['debug'];
 }
 
 
