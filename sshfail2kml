@@ -442,6 +442,8 @@ if (is_readable($file)) {				# main loop
 
 	if (is_array($matches)) {
 
+		if ($DEBUG) print ". - processing\ni - previous log entry recorded so we ignore now\nl - skipping localhost failed logins\nx - no GeoIP data found\ns -  already have GeoIP data\n\n";
+
 		foreach ($matches[0] as $v) {
 
 			/*
@@ -458,11 +460,11 @@ if (is_readable($file)) {				# main loop
 			$row = $result->fetchArray();
 			if (is_array($row)) {
 				// previously recorded hit, ignore
-				if ($DEBUG) print ".";
+				if ($DEBUG) print " i ";
 				continue;
 			}
 
-			if ($DEBUG) print "\n";
+			if ($DEBUG) print " .";
 
 			$items = explode(" ", $v);
 
@@ -484,32 +486,31 @@ if (is_readable($file)) {				# main loop
 			) */
 
 			if ($items[10] == "127.0.0.1") {
-				if ($DEBUG) print "Skipping record for hit from 127.0.0.1\n";
+				if ($DEBUG) print "l ";
 				continue; # lets skip this record if it was a failed login from localhost
 			}
-
-			if ($DEBUG) print "Logging failed attempt by ".$items[10];
-			//if ($DEBUG) print "INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')\n";
 
 			// Insert into the SQLite3 DB so we don't count this again
 			$result = $db->query("INSERT INTO previousFails (line, ip) VALUES ('$v', '".$items[10]."')");
 
 			if (!$result) {
-				print "ERROR: unable to insert record into SQLite3 DB\n"; // not strictly fatal but maybe this should be
+				print "SQL INSERT ERROR"; // not strictly fatal but maybe this should be
+			} else {
+				if ($DEBUG) print ".";
 			}
 
 			$badguys[$items[10]]["count"]++;
 
 			if (!isset($badguys[$items[10]]["geoip"])) { // lets only ever do this once
 
-				if ($DEBUG) print " GeoIP lookup for $items[10] ...";
+				if ($DEBUG) print ".";
 
 				sleep(rand(1,3)); // lets be nice to the upstream geoip API
 				$record = json_decode(file_get_contents("$geoipREST/$items[10]"));
 
 				if (is_object($record)) {
 
-					if ($DEBUG) print " city is $record->city\n";
+					if ($DEBUG) print ".";
 	
 					$badguys[$items[10]]["geoip"] = 	1;
 					$badguys[$items[10]]["latitude"] = 	$record->latitude;
@@ -525,7 +526,7 @@ if (is_readable($file)) {				# main loop
 
 					if ($rowid = updateSQLRecord($items[10], $badguys[$items[10]])) {
 						// good
-						if ($DEBUG) print " Added/Updated SQL record $rowid\n";
+						if ($DEBUG) print ".";
 					} else {
 						// ipaddress insert failed
 						print "ERROR: failed to add or update the SQLite3 ipaddresses table with the details of $items[10]\n";
@@ -534,20 +535,21 @@ if (is_readable($file)) {				# main loop
 
 				} else {
 
-					if ($DEBUG) print " not found.\n";
+					if ($DEBUG) print "x";
 
 					$badguys[$items[10]]["geoip"] = 	0;
 				}
 
 			} else {
 
-				if ($DEBUG) print " not looking up GeoIP details because of previous failed attempt.\n";
+				if ($DEBUG) print "s";
 
 			}
 
-		}
+			if ($DEBUG) " ";
 
-		//if ($DEBUG) print_r($badguys);
+		} // end looping through each row in the secure/auth file
+
 
 		// convert the array to the KML file or print if in debug mode
 		sshfail2KMLWrite ($badguys);
