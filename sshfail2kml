@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**************************************************************************************************
 										      Bryan Andrews
@@ -24,19 +24,29 @@ $kmlfile =	"/var/lib/sshfail2kml/sshfail2kml.kml";		// KML file, relative path
 $maxprevious =	"6";						// max number of previous attempts to show in the KML map
 $geoipREST =	"http://www.telize.com/geoip/";			// You guys rock, thank you
 $conf =		"/etc/sshfail2kml.conf";			// Location in etc of the conf file
-$DEBUG = 	0;
-error_reporting(0);
 $pidfile = 	"/var/run/sshfail2kml.pid";			// Location of the run file containing this PID ID
+error_reporting(0);
+$DEBUG = 	0;
 
 
-//***************************************************************************************************
-//***************************************************************************************************
+//***********************************************************************************************************************************
+//***********************************************************************************************************************************
+//***********************************************************************************************************************************
 
 $time_start = microtime(true); // used at the end to show total exec time if -q wasn't used
 
-// safety
+/*******************************************************************************
+ *
+ * Just to make sure
+ *
+*/
+
 if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
   print "No httpd access.\n";
+  exit(1);
+}
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+  print "ERROR: Windows OS unsupported.\n";
   exit(1);
 }
 
