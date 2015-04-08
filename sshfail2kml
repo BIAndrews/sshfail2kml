@@ -10,13 +10,11 @@
  Requirements
  - php cli
  - php pdo (for sqlite3)
-
 ***************************************************************************************************/
 
-
-/************************************************************
- * DEFAULT VARIABLES, THESE ARE COMMAND LINE SWITCH OPTIONS *
- ************************************************************/
+/*****************************************************************************************
+ * DEFAULT VARIABLES, THESE ARE COMMAND LINE SWITCH OPTIONS AND INI/CONF OPTIONS AS WELL *
+ *****************************************************************************************/
 
 $file = 	"auto";						// this is the syslog file where failed sshd attempts are logged
 $regex = 	"/.*Failed password.*/";			// regex used to find failed SSH login attmepts, shouldn't be changed
@@ -28,12 +26,13 @@ $geoipREST =	"http://www.telize.com/geoip/";			// You guys rock, thank you
 $conf =		"/etc/sshfail2kml.conf";			// Location in etc of the conf file
 $DEBUG = 	0;
 error_reporting(0);
+$pidfile = 	"/var/run/sshfail2kml.pid";			// Location of the run file containing this PID ID
 
 
 //***************************************************************************************************
 //***************************************************************************************************
 
-$time_start = microtime(true); 
+$time_start = microtime(true); // used at the end to show total exec time if -q wasn't used
 
 // safety
 if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
@@ -41,7 +40,12 @@ if (PHP_SAPI !== 'cli' || !empty($_SERVER['REMOTE_ADDR']))  { // command line
   exit(1);
 }
 
-// support for externalized settings in an in file in /etc/sshfail2kml.conf
+/*******************************************************************************
+ *
+ * Handle importing options from the INI/conf file in /etc
+ *
+*/
+
 if (is_file($conf)) {
 
 	// build an array from the ini file, these can be overridden by the command line options though
@@ -58,6 +62,11 @@ if (is_file($conf)) {
 	if ($iniSettings['debug']) 	 $DEBUG =       $iniSettings['debug'];
 }
 
+/*******************************************************************************
+ *
+ * Handle command line switches
+ *
+*/
 
 $opts = getopt("f:j:s:k:m:g:hdq"); 
 foreach (array_keys($opts) as $opt) switch (strtolower($opt)) {
@@ -141,8 +150,47 @@ if ($DEBUG) {
   print "\$geoipREST = $geoipREST\n";
 }
 
-/*
+/****************************************************************************
+ *
+ *  START THE RUN FILE WORK
+ *
+*/
+
+if (is_file($pidfile)) {
+
+	$oldpid = file_get_contents($pidfile);
+
+	if (is_dir("/proc/$oldpid")) {
+
+		// quit the previous run is still going
+		print "ERROR: Previous process detected at PID ${oldpid}.\n";
+		exit(2);
+
+	} else {
+
+		// delete the stale pid file and continue
+		if (!unlink($pidfile)) {
+			print "ERROR: failed to delete old stale run file $pidfile\n";
+			exit(1);
+		}
+	}
+}
+
+if (!file_put_contents("$pidfile",getmypid())) {
+
+	print "ERROR: failed to create run file $pidfile\n";
+	exit(1);
+
+} else { 
+
+	if ($DEBUG) print "Saved run file $pidfile as PID ".getmypid()."\n"; 
+
+}
+
+/*************************************************************************************
+ *
  * SQLITE3 DATABASE CONNECTION - REQUIRED
+ *
 */
 
 if (!is_dir("/var/lib/sshfail2kml")) mkdir("/var/lib/sshfail2kml"); # just in case
@@ -180,13 +228,15 @@ COMMIT;
 
 $db->exec($query) or die("Create SQLite3 database failed but DB file open worked.\n");
 
-/*
+/****************************************************************************************
+ *
  * This is a great way to use DNS to get the abuse email of an IP. 
  * See: https://abusix.com/contactdb.html
  *
  * FALSE|string getAbuseEmail ( string $ip )
  *
 */
+
 function getAbuseEmail ($ip) {
 
 	$rval = FALSE;
@@ -218,11 +268,14 @@ function getAbuseEmail ($ip) {
 	return $rval;
 }
 
-/*
+/*******************************************************************************************************************************
+ *
  * This updates the SQLite table ipaddresses with index details for easier and faster data mining
  *
  * bool updateSQLRecord ( string $ip, array $r )
+ *
 */
+
 function updateSQLRecord ($ip, $r) {
 
 	global $db, $DEBUG;
@@ -262,9 +315,12 @@ function updateSQLRecord ($ip, $r) {
 	return FALSE; // should never get to this point
 }
 
-/*
+/******************************************************************************
+ *
  * bool sshfail2KMLWrite ( array $badguys )
+ *
 */
+
 function sshfail2KMLWrite ($badguys) {
 
 	global $DEBUG, $kmlfile, $db, $maxprevious;
@@ -354,18 +410,23 @@ function sshfail2KMLWrite ($badguys) {
 	return $rval;
 }
 
-/*
+/***********************************************************************************
+ *
  * Just a fast way to make a byte int human readable
  * See: http://php.net/manual/en/function.filesize.php
+ *
 */
+
 function human_filesize($bytes, $decimals = 2) {
   $sz = 'BKMGTP';
   $factor = floor((strlen($bytes) - 1) / 3);
   return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
 }
 
-/*
+/***************************************************************************************************************
+ *
  * 	LOOP THROUGH THE SECURE LOG FILE FOR FAILED SSH LOGIN ATTEMPTS AND RECORD/INDEX/LOOKUP
+ *
 */
 
 // Get the last runs cache file so we can increment values.
@@ -507,6 +568,28 @@ if (is_readable($file)) {				# main loop
 	print "ERROR: unable to read $file. Do you need to run this as sudo?\n";
 	exit(1);
 }
+
+/*******************************************************************************
+ *
+ * Clean up the run file
+ *
+*/
+
+if (!unlink($pidfile)) {
+
+	print "ERROR: failed to delete old stale run file $pidfile\n";
+	exit(1);
+
+} else {
+
+	if ($DEBUG) print "Deleted run file $pidfile successfully.\n";
+}
+
+/*******************************************************************************
+ *
+ * End of the run, show execution time if -q wasn't used
+ *
+*/
 
 $time_end = microtime(true);
 $execution_time = ($time_end - $time_start);

@@ -3,7 +3,7 @@
 Summary: SSH failed login attempts recorded to Google Maps KML file, JSON, and SQLite3.
 Name: sshfail2kml
 Version: 1.3.2
-Release: 3
+Release: 1
 License: GPLv2
 Group: Applications/System
 Source0: sshfail2kml
