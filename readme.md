@@ -1,7 +1,7 @@
 sshfail2kml
 ===========
 
-v1.3.2
+v1.3
 
 SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
 
