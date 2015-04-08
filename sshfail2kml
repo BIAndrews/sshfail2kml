@@ -141,8 +141,6 @@ if ($DEBUG) {
   print "\$geoipREST = $geoipREST\n";
 }
 
-exit;
-
 /*
  * SQLITE3 DATABASE CONNECTION - REQUIRED
 */
