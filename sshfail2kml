@@ -49,6 +49,10 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
   print "ERROR: Windows OS unsupported.\n";
   exit(1);
 }
+if (!class_exists('SQLite3')) {
+  print "ERROR: Missing PDO for SQLite3 classes.\n  RHEL: yum install php-pdo\n  DEBIAN: aptitude install php5-sqlite\n";
+  exit(1);
+}
 
 /*******************************************************************************
  *
@@ -204,7 +208,12 @@ if (!file_put_contents("$pidfile",getmypid())) {
 */
 
 if (!is_dir("/var/lib/sshfail2kml")) mkdir("/var/lib/sshfail2kml"); # just in case
-$db = new SQLite3($sqlitedb) or die("Unable to open SQLite3 database at $sqlitedb\n");
+
+if (!$db = new SQLite3($sqlitedb)) {
+  print "Unable to open SQLite3 database at $sqlitedb\n";
+  exit(1);
+}
+
 $query = "
 BEGIN;
 
@@ -447,12 +456,15 @@ if (is_file($savefile)) {
 
 if (is_readable($file)) {				# main loop
 
-	$readfile = file_get_contents ($file);
+	if ($DEBUG) print "$file is a file... ";
+	if ($readfile = file_get_contents ($file)) {
+		if ($DEBUG) print " read ".human_filesize(filesize($file))." ";
+	}
 	preg_match_all ($regex, $readfile, $matches);
 
 	if (is_array($matches)) {
 
-		if ($DEBUG) print ". - processing\ni - previous log entry recorded so we ignore now\nl - skipping localhost failed logins\nx - no GeoIP data found\ns -  already have GeoIP data\n\n";
+		if ($DEBUG) print "\n. - processing\ni - previous log entry recorded so we ignore now\nl - skipping localhost failed logins\nx - no GeoIP data found\ns -  already have GeoIP data\n\n";
 
 		foreach ($matches[0] as $v) {
 
