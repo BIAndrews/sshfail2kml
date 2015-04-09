@@ -1,0 +1,2 @@
+?package(sshfail2kml):needs="php5-cli|phpt-sqlite" section="Applications/admin"\
+  title="sshfail2kml" command="/usr/bin/sshfail2kml"

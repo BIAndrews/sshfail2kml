@@ -2,7 +2,7 @@
 
 Summary: SSH failed login attempts recorded to Google Maps KML file, JSON, and SQLite3.
 Name: sshfail2kml
-Version: 1.3.2
+Version: 1.3.3
 Release: 1
 License: GPLv2
 Group: Applications/System
@@ -25,7 +25,7 @@ SSH failed login attempts logged and GeoIP info acquired for Google Map KML disp
 %build
 %{__install} -d ~/rpmbuild/SOURCES
 curl -s https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml > %{_sourcedir}/sshfail2kml
-curl -s https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml-cron.sh > %{_sourcedir}/sshfail2kml-cron.sh
+echo "8 * * * * root /usr/bin/sshfail2kml -q >/dev/null 2>&1" > %{_sourcedir}/sshfail2kml-cron.sh
 curl -s https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml.conf > %{_sourcedir}/sshfail2kml.conf
 
 %install

@@ -1,0 +1,26 @@
+Source: sshfail2kml
+Section: admin
+Priority: extra
+Maintainer: Bryan Andrews <bryanandrews@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Homepage: https://github.com/BIAndrews/sshfail2kml
+Vcs-Git: git@github.com:BIAndrews/sshfail2kml.git
+
+Package: sshfail2kml
+Architecture: all
+Depends: php5-cli, php5-sqlite, ${misc:Depends}
+Description: SSH failed login attempts logged and GeoIP info acquired for Google Map KML display in an HTML page. Complete with JSON results and SQLite indexed database for a log rotation friendly setup.
+ SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
+ * Tested with RedHat/CentOS/RHEL, should work on any Debian variant as well
+ * SQLite3 database for duplicate record prevention and detailed indexed records
+ * JSON file created and updated each run
+ * HTML complete with working Google Map KML example
+ * Mouse hover over action shows number of total recorded login attempts
+ * Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
+ * PHP examples for working with JSON
+ * Command line switches to overwrite defaults
+ * Auto detect abuse email addresses for suspect IP addresses and log to SQL and JSON and KML outputs
+ * SQLite/JSON/KML files saved in /var/lib/sshfail2kml by default
+ * RPM noarch spec file for RPM creation with examples
+ * Externalized settings in optional conf /etc file

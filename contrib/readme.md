@@ -1,60 +1,118 @@
-sshfail2kml
-===========
+Packaging
+=========
 
-v1.3
+Debian / Ubuntu
+---------------
 
-SSH failed login collector with Google Map KML and JSON output. Scales with SQLite3 and is log-rotator friendly.
-
-<a href="http://www.bryanandrews.org/failedlogins/">DEMO</a>
-
-* Tested with RedHat/CentOS/RHEL, should work on any Debian variant as well
-* SQLite3 database for duplicate record prevention and detailed indexed records
-* JSON file created and updated each run
-* HTML complete with working Google Map KML example
-* Mouse hover over action shows number of total recorded login attempts
-* Intelligent GeoIP lookups to eliminate redundant queries via external API so no need for local GeoIP dat files
-* PHP examples for working with JSON
-* Command line switches to overwrite defaults
-* Auto detect abuse email addresses for suspect IP addresses and log to SQL and JSON and KML outputs
-* SQLite/JSON/KML files saved in /var/lib/sshfail2kml by default
-* RPM noarch spec file for RPM creation with examples 
-* Debian noarch package in the works
-* Externalized settings in optional conf /etc file
-
-Requirements
-------------
-
-### RHEL ###
-* PHP5 CLI  - php-cli 2.2megs
-* PHP5 PDO for SQLite3 - php-pdo 78kb
-
-### Debian ###
-* php5-cli
-* php5-sqlite
-
-Screen Shot
------------
-![screensho image](sshfail2kml-map.png "An example Map from live data.")
-
-Usage
------
+### sshfail2kml-VER ###
 ~~~
-# /usr/bin/sshfail2kml -h
-/usr/bin/sshfail2kml [-f] [-j] [-s] [-k] [-m] [-g] [-h] [-q] [-d]
+root@host:/usr/src/sshfail2kml/contrib/sshfail2kml-1.3.3# ./build.sh 
+--2015-04-09 15:36:54--  https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 199.27.74.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|199.27.74.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 18189 (18K) [text/plain]
+Saving to: `sshfail2kml/usr/bin/sshfail2kml'
 
-        -f file         Syslog secure or auth.log log file to process.   Default: Auto detect
-        -j file         JSON file.                                       Default: /var/lib/sshfail2kml/sshfail2kml.json
-        -s file         SQLite3 DB file.                                 Default: /var/lib/sshfail2kml/sshfail2kml.sqlite
-        -k file         KML file.                                        Default: /var/lib/sshfail2kml/sshfail2kml.kml
-        -m int          Max number of previous hits to show in KML file. Default: 6
-        -g url          URL to the GeoIP REST API to use.                Default: http://www.telize.com/geoip/
-        -h              This help screen.
-        -q              Be quiet.
-        -d              Enable debug mode.
+100%[===========================================================================================================================>] 18,189      --.-K/s   in 0.02s   
+
+2015-04-09 15:36:55 (888 KB/s) - `sshfail2kml/usr/bin/sshfail2kml' saved [18189/18189]
+
+--2015-04-09 15:36:55--  https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/sshfail2kml.conf
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 199.27.74.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|199.27.74.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 228 [text/plain]
+Saving to: `sshfail2kml/etc/sshfail2kml.conf'
+
+100%[===========================================================================================================================>] 228         --.-K/s   in 0s      
+
+2015-04-09 15:36:55 (4.38 MB/s) - `sshfail2kml/etc/sshfail2kml.conf' saved [228/228]
+
+dpkg-buildpackage: export CFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export CPPFLAGS from dpkg-buildflags (origin: vendor): -D_FORTIFY_SOURCE=2
+dpkg-buildpackage: export CXXFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export FFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export LDFLAGS from dpkg-buildflags (origin: vendor): -Wl,-Bsymbolic-functions -Wl,-z,relro
+dpkg-buildpackage: source package sshfail2kml
+dpkg-buildpackage: source version 1.3.3
+dpkg-buildpackage: source changed by Bryan Andrews <bryanandrews@gmail.com>
+dpkg-buildpackage: host architecture amd64
+ dpkg-source --before-build sshfail2kml-1.3.3
+ debian/rules clean
+dh clean 
+   dh_testdir
+   dh_auto_clean
+   dh_clean
+ dpkg-source -b sshfail2kml-1.3.3
+dpkg-source: info: using source format `3.0 (native)'
+dpkg-source: info: building sshfail2kml in sshfail2kml_1.3.3.tar.gz
+dpkg-source: info: building sshfail2kml in sshfail2kml_1.3.3.dsc
+ debian/rules build
+dh build 
+   dh_testdir
+   dh_auto_configure
+   dh_auto_build
+   dh_auto_test
+ debian/rules binary
+dh binary 
+   dh_testroot
+   dh_prep
+   dh_installdirs
+   dh_auto_install
+   dh_install
+   dh_installdocs
+   dh_installchangelogs
+   dh_installexamples
+   dh_installman
+   dh_installcatalogs
+   dh_installcron
+   dh_installdebconf
+   dh_installemacsen
+   dh_installifupdown
+   dh_installinfo
+   dh_installinit
+   dh_installmenu
+   dh_installmime
+   dh_installmodules
+   dh_installlogcheck
+   dh_installlogrotate
+   dh_installpam
+   dh_installppp
+   dh_installudev
+   dh_installwm
+   dh_installxfonts
+   dh_installgsettings
+   dh_bugfiles
+   dh_ucf
+   dh_lintian
+   dh_gconf
+   dh_icons
+   dh_perl
+   dh_usrlocal
+   dh_link
+   dh_compress
+   dh_fixperms
+   dh_installdeb
+   dh_gencontrol
+   dh_md5sums
+   dh_builddeb
+dpkg-deb: building package `sshfail2kml' in `../sshfail2kml_1.3.3_all.deb'.
+ dpkg-genchanges  >../sshfail2kml_1.3.3_amd64.changes
+dpkg-genchanges: including full source code in upload
+ dpkg-source --after-build sshfail2kml-1.3.3
+dpkg-buildpackage: full upload; Debian-native package (full source is included)
+root@host:/usr/src/sshfail2kml/contrib/sshfail2kml-1.3.3# ls -lah *.deb
+total 68K
+-rw-r--r-- 1 root root 9.0K Apr  9 15:36 sshfail2kml_1.3.3_all.deb
 ~~~
 
-RPM Creation
-------------
+
+
+RPM / Redhat / CentOS
+---------------------
+
+### sshfail2kml.spec ###
 ~~~
 [root@colo3 tmp]# curl https://raw.githubusercontent.com/BIAndrews/sshfail2kml/master/contrib/sshfail2kml.spec > sshfail2kml.spec
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -140,53 +198,3 @@ SSH failed login attempts logged and GeoIP info acquired for Google Map KML disp
 /var/lib/sshfail2kml
 ~~~
 
-SQLite3 Schemas
----------------
-~~~
- -- Complete syslog line fail
- CREATE TABLE IF NOT EXISTS previousFails (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  line STRING UNIQUE NOT NULL,
-  ip CHAR(15),
-  t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
- CREATE INDEX IF NOT EXISTS line ON previousFails (line);
- CREATE INDEX IF NOT EXISTS ip ON previousFails (ip);
- CREATE INDEX IF NOT EXISTS t ON previousFails (t);
-
- -- Indexed table of IP addresses with GeoIP details and hit counts
- CREATE TABLE IF NOT EXISTS ipaddresses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ip CHAR(15) UNIQUE NOT NULL,
-  count INT,
-  geoip INT,
-  latitude REAL,
-  longitude REAL,
-  country_name CHAR(64),
-  city CHAR(64),
-  state CHAR(64),
-  abuse_email CHAR(128),
-  t TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
- CREATE INDEX IF NOT EXISTS ip ON ipaddresses (ip);
- CREATE INDEX IF NOT EXISTS count ON ipaddresses (count);
- CREATE INDEX IF NOT EXISTS country_name ON ipaddresses (country_name);
-~~~
-
-JSON Example
-------------
-~~~
-        [218.65.30.73] => Array
-        (
-            [count] => 45
-            [geoip] => 1
-            [latitude] => 28.549999237061
-            [longitude] => 115.93329620361
-            [country_name] => China
-            [city] => Nanchang
-            [state] => 03
-            [abuse_email] => abuse@globenet.com.ph
-        )
-~~~
-
-> Bryan Andrews<br>
-> bryanandrews@gmail.com<br>
-> http://www.bryanandrews.org<br>
