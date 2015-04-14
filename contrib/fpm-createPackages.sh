@@ -55,6 +55,19 @@ if [ $? -ne 0 ];then
   exit 1
 fi
 
+if [ -f "${PWD}/.release-${VER}" ];then
+. "${PWD}/.release-${VER}"
+RELEASE=$((RELEASE+1))
+else
+RELEASE="0"
+fi
+echo "RELEASE=$RELEASE" > "${PWD}/.release-${VER}"
+
+
+echo VER=$VER
+echo RELEASE=$RELEASE
+exit
+
 install -d $DIR/var/lib/sshfail2kml $DIR/etc/cron.d $DIR/usr/bin
 cp -f ../sshfail2kml $DIR/usr/bin
 cp -f ../sshfail2kml.conf $DIR/etc
