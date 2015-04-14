@@ -11,8 +11,8 @@
         padding: 0px
       }
       #map-canvas {
-	width: 880px;
-	height: 400px;
+	      width: 880px;
+	      height: 400px;
         margin: 0px;
         padding: 0px
       }
@@ -52,6 +52,9 @@
 <?php
 $ftime = date("m/d/y h:ia",filemtime("sshfail2kml.kml"));
 print "<h2>SSH break in attempts map. Last updated: $ftime [<a href=\"https://github.com/BIAndrews/sshfail2kml\">Project Home and Source</a>]</h2>";
+print "
+<li><a href=\"http://www.bryanandrews.org/failedlogins/sshfail2kml-latest.noarch.rpm\">RPM package for sshfail2kml</a><Br>
+<li><a href=\"http://www.bryanandrews.org/failedlogins/sshfail2kml_latest_all.deb\">DEB package for sshfail2kml</a><br><br>\n";
 ?>
 
 <div id="map-canvas"></div>

@@ -20,6 +20,12 @@ URI="https://github.com/BIAndrews/sshfail2kml"
 LIC="GPLv3"
 PROV="sshfail2kml"
 EMAIL="bryanandrews@gmail.com"
+if [ -f version.sh ];then
+  echo "Unable to find the version.sh file."
+  pwd
+  ls -lah .
+  exit 1
+fi
 . version.sh
 
 install -d $DIR/var/lib/sshfail2kml $DIR/etc/cron.d $DIR/usr/bin
