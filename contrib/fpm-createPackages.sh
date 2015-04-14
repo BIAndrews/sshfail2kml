@@ -1,17 +1,37 @@
+#
+# PREFLIGHT CHECK FOR REQUIRED TOOLS
+#
+
 # my build server is centos, could be easy to update this to support debian
-if [ ! -x /bin/gcc ];then
-yum install gcc
-#aptitude install gcc
+if [ ! command -v fpm >/dev/null 2>&1 ];then
+
+  gem install fpm
+
+  if [ ! command -v fpm >/dev/null 2>&1 ];then
+    echo "Unable to install or find fpm."
+    exit 1
+  fi
+
 fi
 
-if [ ! -f /usr/include/ruby.h ];then
-yum install ruby-devel
-#aptitude install ...
+if [ ! command -v gcc >/dev/null 2>&1 ];then
+
+  yum install gcc
+  #aptitude install gcc
+
 fi
 
-if [ ! -x $(which fpm) ];then
-gem install fpm
+rpm -ql ruby-devel > /dev/null
+if [ $? -ne 0 ];then
+
+  yum install ruby-devel
+  #aptitude install ...
+
 fi
+
+#
+# LETS GO
+#
 
 DIR="fakeroot/"
 NAME="sshfail2kml"
@@ -20,13 +40,20 @@ URI="https://github.com/BIAndrews/sshfail2kml"
 LIC="GPLv3"
 PROV="sshfail2kml"
 EMAIL="bryanandrews@gmail.com"
-if [ ! -f version.sh ];then
+
+if [ ! -f "${PWD}/version.sh" ];then
   echo "Unable to find the version.sh file."
   pwd
   ls -lah .
   exit 1
 fi
-. version.sh
+
+. "${PWD}/version.sh"
+
+if [ $? -ne 0 ];then
+  echo "ERROR: Failed to include ${PWD}/version.sh"
+  exit 1
+fi
 
 install -d $DIR/var/lib/sshfail2kml $DIR/etc/cron.d $DIR/usr/bin
 cp -f ../sshfail2kml $DIR/usr/bin
