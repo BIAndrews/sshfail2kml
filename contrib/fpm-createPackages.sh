@@ -63,10 +63,7 @@ RELEASE="0"
 fi
 echo "RELEASE=$RELEASE" > "${PWD}/.release-${VER}"
 
-
-echo VER=$VER
-echo RELEASE=$RELEASE
-exit
+echo "Building packages for ${VER}-${RELEASE}"
 
 install -d $DIR/var/lib/sshfail2kml $DIR/etc/cron.d $DIR/usr/bin
 cp -f ../sshfail2kml $DIR/usr/bin
