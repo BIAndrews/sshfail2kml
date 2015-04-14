@@ -20,8 +20,8 @@ URI="https://github.com/BIAndrews/sshfail2kml"
 LIC="GPLv3"
 PROV="sshfail2kml"
 EMAIL="bryanandrews@gmail.com"
-VER="1.3.3"
-RELEASE="1"
+VER="#VER#"
+RELEASE="#BUILD#"
 
 install -d $DIR/var/lib/sshfail2kml $DIR/etc/cron.d $DIR/usr/bin
 cp -f ../sshfail2kml $DIR/usr/bin
