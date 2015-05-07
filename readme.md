@@ -25,12 +25,14 @@ Installation
 ------------
 
 ### CentOS/RHEL ###
-~~~wget -O /etc/yum.repos.d/sshfail2kml.conf http://repo.bryanandrews.org/sshfail2kml/centos/sshfail2kml.repo
+~~~
+wget -O /etc/yum.repos.d/sshfail2kml.conf http://repo.bryanandrews.org/sshfail2kml/centos/sshfail2kml.repo
 yum install sshfail2kml
 ~~~
 
 ### Debian ###
-~~~wget -O - http://repo.bryanandrews.org/sshfail2kml/debian/SSHFAIL2KML.gpg.key | apt-key add -
+~~~
+wget -O - http://repo.bryanandrews.org/sshfail2kml/debian/SSHFAIL2KML.gpg.key | apt-key add -
 wget -O /etc/apt/sources.list.d/sshfail2kml.list http://repo.bryanandrews.org/sshfail2kml/debian/sources.list
 apt-get update
 aptitude install sshfail2kml
