@@ -21,16 +21,20 @@ SSH failed login collector with Google Map KML and JSON output. Scales with SQLi
 * Debian noarch package in the works
 * Externalized settings in optional conf /etc file
 
-Requirements
+Installation
 ------------
 
-### RHEL ###
-* PHP5 CLI  - php-cli 2.2megs
-* PHP5 PDO for SQLite3 - php-pdo 78kb
+### CentOS/RHEL ###
+~~~wget -O /etc/yum.repos.d/sshfail2kml.conf http://repo.bryanandrews.org/sshfail2kml/centos/sshfail2kml.repo
+yum install sshfail2kml
+~~~
 
 ### Debian ###
-* php5-cli
-* php5-sqlite
+~~~wget -O - http://repo.bryanandrews.org/sshfail2kml/debian/SSHFAIL2KML.gpg.key | apt-key add -
+wget -O /etc/apt/sources.list.d/sshfail2kml.list http://repo.bryanandrews.org/sshfail2kml/debian/sources.list
+apt-get update
+aptitude install sshfail2kml
+~~~
 
 Screen Shot
 -----------
