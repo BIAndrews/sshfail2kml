@@ -1,6 +1,5 @@
 script: 
   - ./contrib/qa.sh
-install: php
 language: php
 php:
   - 5.4
