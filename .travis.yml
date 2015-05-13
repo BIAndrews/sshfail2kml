@@ -1,2 +1,2 @@
 script: "./contrib/qa.sh"
-
+install: php
