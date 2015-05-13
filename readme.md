@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/BIAndrews/sshfail2kml.svg?branch=master)](https://travis-ci.org/BIAndrews/sshfail2kml)
+[![Code Health](https://landscape.io/github/BIAndrews/sshfail2kml/master/landscape.svg?style=flat)](https://landscape.io/github/BIAndrews/sshfail2kml/master)
 
 sshfail2kml
 ===========
