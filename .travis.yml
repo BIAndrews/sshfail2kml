@@ -1,5 +1,5 @@
 script: 
-  - "php -l sshfail2kml"
+  - ./contrib/qa.sh
 install: php
 language: php
 php:

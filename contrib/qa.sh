@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#cd ..
-
 if [ -f sshfail2kml ];then
 
   php -l sshfail2kml
