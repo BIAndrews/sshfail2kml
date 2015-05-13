@@ -26,7 +26,7 @@ Installation
 
 ### CentOS/RHEL ###
 ~~~
-wget -O /etc/yum.repos.d/sshfail2kml.conf http://repo.bryanandrews.org/sshfail2kml/centos/sshfail2kml.repo
+wget -O /etc/yum.repos.d/sshfail2kml.repo http://repo.bryanandrews.org/sshfail2kml/centos/sshfail2kml.repo
 yum install sshfail2kml
 ~~~
 
