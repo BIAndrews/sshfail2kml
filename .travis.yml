@@ -1,2 +1,7 @@
-script: "./contrib/qa.sh"
+script: php -l sshfail2kml
 install: php
+language: php
+php:
+  - 5.4
+  - 5.5
+  - 5.6  
