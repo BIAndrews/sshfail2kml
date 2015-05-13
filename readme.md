@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/BIAndrews/sshfail2kml.svg?branch=master)](https://travis-ci.org/BIAndrews/sshfail2kml)
+
 sshfail2kml
 ===========
 
